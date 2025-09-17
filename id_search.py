@@ -60,7 +60,6 @@ def can_schedule(tasks: dict, path: list):
             return False
     return True
 
-
 """
 Iterative deepening search functions
 """

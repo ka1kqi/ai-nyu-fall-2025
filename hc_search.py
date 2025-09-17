@@ -1,7 +1,7 @@
 """
 Author: Kaikai Du
 Artificial Intelligence Programming Assignment 1
-Iterative deepening
+Hill climbing
 """
 import re 
 import sys
@@ -87,6 +87,9 @@ def can_schedule(tasks: dict, path: list):
             return False
     return True
 
+"""
+Hill climbing search functions
+"""
 def generate_starting_state(tasks: dict):
     starting_nodes = []
     for t in tasks:
@@ -121,9 +124,9 @@ def generate_neighbors(tasks: dict, path: list):
 def hill_climbing(tasks: dict):
     path, _, err = generate_starting_state(tasks)
     print(f"Randomly chosen start state: ", end = "")
+    print_path_hc(tasks,path)
     if err == 0:
         return path, err
-    print_path_hc(tasks,path)
     while True:
         neighbors = generate_neighbors(tasks,path)
         cur_error = err
