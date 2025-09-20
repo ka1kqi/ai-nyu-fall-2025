@@ -8,9 +8,11 @@ import sys
 import numpy as np
 import random as rand
 
+
 verbose = False
 target = 0
 num_random_restarts = -1
+start_path = []
 
 """
 Utility functions
@@ -19,6 +21,7 @@ def parse_input_file():
     global verbose
     global target
     global num_random_restarts
+    global start_path
     try:
         table = {}
         target = 0
@@ -26,8 +29,13 @@ def parse_input_file():
             first_line = file.readline().strip().split(" ")
             target = int(first_line[0])
             verbose = True if first_line[1] == 'V' else False
-            if len(first_line) == 3:
+            if len(first_line) >= 3 and first_line[2].isnumeric():
                 num_random_restarts = int(first_line[2])
+
+            if len(first_line) > 4 and first_line[3] == "//":
+                #has specified starting matrix
+                start_path = [t for t in first_line[4:]]
+
             else:
                 print("Incorrect input, please specify number of random restarts")
                 sys.exit(0)
@@ -60,7 +68,8 @@ def parse_path(tasks: dict, path: list):
 
 #error function for hill climbing
 def error(tasks : dict, path: list):
-    e = max(24-sum_path(tasks,path),0)
+    global target
+    e = max(target-sum_path(tasks,path),0)
     cur_time = 0
     for t in path:
         length = tasks[t][1]
@@ -101,13 +110,7 @@ def generate_starting_state(tasks: dict):
 
 def generate_neighbors(tasks: dict, path: list):
     neighbors = []
-    #add tasks not in 
-    for t in tasks:
-        if t not in path:
-            new_path = path + [t]
-            neighbors.append(new_path)
-
-    #remove task
+     #remove task
     for i in range(len(path)):
         new_path = path[:i] + path[i+1:]
         if len(new_path) > 0:
@@ -119,28 +122,47 @@ def generate_neighbors(tasks: dict, path: list):
         new_path[i],new_path[i+1] = new_path[i+1],new_path[i]
         neighbors.append(new_path)
 
+    #add tasks not in 
+    for t in tasks:
+        if t not in path:
+            new_path = path + [t]
+            neighbors.append(new_path)
+
     return neighbors
 
 def hill_climbing(tasks: dict):
-    path, _, err = generate_starting_state(tasks)
-    print(f"Randomly chosen start state: ", end = "")
-    print_path_hc(tasks,path)
+    """
+    To specify a starting path, add a "//" to the first line of the input.txt file and then the path afterwards
+    ex. first line: 22 V 4 // D F C B
+    """
+    global start_path
+    path = []
+    err = 0
+    if len(start_path) > 0:
+        path, err = start_path, error(tasks,start_path)
+        print(f"Using specified start path: ", end = "")
+        print_path_hc(tasks,start_path)
+        start_path = []
+    else:
+        path, _, err = generate_starting_state(tasks)
+        print(f"Randomly chosen start state: ", end = "")
+        print_path_hc(tasks,path)
     if err == 0:
         return path, err
     while True:
         neighbors = generate_neighbors(tasks,path)
         cur_error = err
         if verbose:
-            print("Move to ",end = "")
-            print_path_hc(tasks,path)
             print("Neighbors")
         for nb in neighbors:
             if verbose:
                 print_path_hc(tasks,nb)
             e = error(tasks, nb)
             if e == 0:
+                #solution found
                 return nb, e
             if e < err:
+                #found better path
                 path = nb
                 err = e
         if err == cur_error:
@@ -148,6 +170,8 @@ def hill_climbing(tasks: dict):
             return [],sys.maxsize
         if verbose:
             print()
+            print("Move to ",end = "")
+            print_path_hc(tasks,path)
 
     return path, err
 
@@ -165,10 +189,14 @@ def rr_hill_climbing(tasks: dict,n: int):
             best_error = error
             best_path = path
         if verbose:
+            if error == sys.maxsize:
+                print("Search failed")
             print()
     return best_path, best_error
 
 def main():
+    global num_random_restarts
+    global start_path
     tasks = parse_input_file()
     hc_path, _ = rr_hill_climbing(tasks,num_random_restarts)
 

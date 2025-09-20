@@ -87,7 +87,7 @@ def dfs(tasks: dict, k: int, n: int, path: list):
 def iterative_deepening(tasks: dict):
     for max_depth in range(0,len(tasks)):
         if verbose:
-            print(f"Depth = {max_depth}")
+            print(f"Depth = {max_depth+1}")
         for t in tasks:
             path, value = dfs(tasks,max_depth,0,[t])
             if value >= target:
