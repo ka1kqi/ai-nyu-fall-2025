@@ -1,1 +1,1 @@
-
+This is code for creating clauses to solve a maze, where we are to collect all the treasures in order to escape. The DPLL algorithm was provided by the professor, but I aim to write my own version sometime in the future when I have time. The clauses are created by generating strings written in Datalog-like form from information provided in an input file, and then atomizing them by mapping them into a Sym Table. The mapped atoms are then placed into clauses, which are provided to the DPLL algorithm to solve. The result is then parsed and output. 
