@@ -4,7 +4,7 @@ Markov Decision Process in Python
 '''
 
 import random
-
+import sys
 
 #store program info
 class Param:
@@ -23,51 +23,55 @@ class Param:
 
 class Score():
     def __init__(self, S, A):
-        self.counts = [[0.0 for _ in range(A)] for _ in range(S)]
+        self.counts = [[0 for _ in range(A)] for _ in range(S)]
         self.totals = [[0.0 for _ in range(A)] for _ in range(S)]
 
 def parse_input():
-    with open('input.txt','r') as file:
-        line = file.readline().strip().split(' ')
-        params = Param(int(line[0]),int(line[1]),int(line[2]),int(line[3]),int(line[4]),int(line[5]))
+    try:
+        with open('input.txt','r') as file:
+            line = file.readline().strip().split(' ')
+            params = Param(int(line[0]),int(line[1]),int(line[2]),int(line[3]),int(line[4]),int(line[5]))
 
-        #rewards at terminal states
-        line = file.readline().strip().split(' ')
-        for i in range(0,len(line),2):
-            params.rewards[int(line[i])] = int(line[i+1])
-            params.terminal_states.append(int(line[i]))
-        
-        for i in range(params.N):
-            if i not in params.terminal_states:
-                params.states.append(i)
-        
-        #costs of each action
-        line = file.readline().strip().split(' ')
-        for i in range(0,len(line),2):
-            params.costs[int(line[i])] = float(line[i+1])
-        
-        #transition probabilities
-        for st in file:
-            line = st.strip().split(' ')
-            state_action = line[0].split(':')
-            state = int(state_action[0])
-            action = int(state_action[1])
-            T = {}
-            for i in range(1,len(line),2):
-                #maps state to probability i.e. (transition to state line[i] with p = line[i+1])
-                T[int(line[i])] = float(line[i+1])
-            if state not in params.transitions:
-                params.transitions[state] = {action: T}
-            else:
-                params.transitions[state][action] = T
-        file.close()
+            #rewards at terminal states
+            line = file.readline().strip().split(' ')
+            for i in range(0,len(line),2):
+                params.rewards[int(line[i])] = int(line[i+1])
+                params.terminal_states.append(int(line[i]))
+            
+            for i in range(params.N):
+                if i not in params.terminal_states:
+                    params.states.append(i)
+            
+            #costs of each action
+            line = file.readline().strip().split(' ')
+            for i in range(0,len(line),2):
+                params.costs[int(line[i])] = float(line[i+1])
+            
+            #transition probabilities
+            for st in file:
+                line = st.strip().split(' ')
+                state_action = line[0].split(':')
+                state = int(state_action[0])
+                action = int(state_action[1])
+                T = {}
+                for i in range(1,len(line),2):
+                    #maps state to probability i.e. (transition to state = line[i] with p = line[i+1])
+                    T[int(line[i])] = float(line[i+1])
+                if state not in params.transitions:
+                    params.transitions[state] = {action: T}
+                else:
+                    params.transitions[state][action] = T
+            file.close()
         return params
+    except Exception as e:
+        print(f"Error occured while parsing input file")
+        sys.exit()
 
 
 def choose_action(S,counts,totals,params):
     n = params.n_actions
     M = params.M
-    #look for untried actions
+    #look for untried actions first
     for i in range(n):
         if counts[S][i] == 0:
             return i
@@ -82,6 +86,7 @@ def choose_action(S,counts,totals,params):
     up = [s_avg[i] ** (float(c)/float(M)) for i in range(n)]
     norm = sum(up)
     p = [x/norm for x in up]
+    assert(abs(1-sum(p)) < 0.00001)
     actions = list(range(n))
     return random.choices(actions,weights=p,k=1)[0]
 
@@ -159,7 +164,6 @@ def train(params):
             print_state(S,n_states,n_actions,rd)
     if params.n_rounds % params.v == 0:
         print_state(S,n_states,n_actions,params.n_rounds)
-
 
 if __name__ == "__main__":
     params = parse_input()
