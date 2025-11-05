@@ -115,7 +115,7 @@ def print_state(S,n_states,n_actions,round_number):
     for s in range(n_states):
         best_action = 0
         for a in range(n_actions):
-            if S.totals[s][a] == 0 or S.counts[s][a] == 0:
+            if S.counts[s][a] == 0:
                 best_action = 'U'
                 break
             if S.totals[s][a]/S.counts[s][a] > S.totals[s][best_action]/S.counts[s][best_action]:
