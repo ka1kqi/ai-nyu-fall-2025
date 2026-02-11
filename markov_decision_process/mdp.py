@@ -29,11 +29,11 @@ class Score():
 def parse_input():
     try:
         with open('input.txt','r') as file:
-            line = file.readline().strip().split(' ')
+            line = file.readline().strip().split()
             params = Param(int(line[0]),int(line[1]),int(line[2]),int(line[3]),int(line[4]),int(line[5]))
 
             #rewards at terminal states
-            line = file.readline().strip().split(' ')
+            line = file.readline().strip().split()
             for i in range(0,len(line),2):
                 params.rewards[int(line[i])] = int(line[i+1])
                 params.terminal_states.append(int(line[i]))
@@ -43,7 +43,7 @@ def parse_input():
                     params.states.append(i)
             
             #costs of each action
-            line = file.readline().strip().split(' ')
+            line = file.readline().strip().split()
             for i in range(0,len(line),2):
                 params.costs[int(line[i])] = float(line[i+1])
             
